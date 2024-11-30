@@ -26,7 +26,7 @@ export default function Specialty() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState(null); // For update tracking
   // Validation helper functions
-  const isValidName = (name) => name.trim().length > 0; // Ensure name is not empty
+  const isValidName = (value) => /^[A-Za-z]+$/.test(value); // Only letters
   const isValidNumberOfPlaces = (num) => /^\d+$/.test(num) && parseInt(num) > 0; // Must be a positive integer
 
   // Additional state for alert messages
@@ -36,7 +36,7 @@ export default function Specialty() {
 
   useEffect(() => {
     fetchSpecialties();
-  }, [specialties]);
+  }, []);
 
   const fetchSpecialties = async () => {
     const response = await fetch("http://localhost:9090/specialities/all");
@@ -230,8 +230,33 @@ export default function Specialty() {
                 [field.id]: event.target.value,
               })
             }
+            error={
+              field.id === "name"
+                ? Boolean(
+                    specialty[field.id] && !isValidName(specialty[field.id])
+                  ) // Ensure boolean
+                : field.id === "numberOfPlaces"
+                ? Boolean(
+                    specialty[field.id] &&
+                      !isValidNumberOfPlaces(specialty[field.id])
+                  ) // Ensure boolean
+                : false
+            }
+            helperText={
+              field.id === "name"
+                ? specialty[field.id] && !isValidName(specialty[field.id])
+                  ? "Name must only contain letters."
+                  : ""
+                : field.id === "numberOfPlaces"
+                ? specialty[field.id] &&
+                  !isValidNumberOfPlaces(specialty[field.id])
+                  ? "Number of places must be a valid number."
+                  : ""
+                : ""
+            }
           />
         ))}
+
         <Box sx={{ display: "flex", width: "100%", mt: 6 }}>
           <Button
             sx={{ display: "block", ml: 1 }}

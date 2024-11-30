@@ -45,7 +45,7 @@ export default function Student() {
 
   useEffect(() => {
     fetchStudents();
-  }, [students]);
+  }, []);
 
   const fetchStudents = async () => {
     const response = await fetch("http://localhost:9090/student/with-choices");
@@ -249,7 +249,6 @@ export default function Student() {
           columns={columns}
           getRowId={(row) => row.nbrStudent}
           pageSize={4}
-          // checkboxSelection
           onRowClick={({ row }) => handleRowClick(row)}
           sx={{
             height: 300,
@@ -260,55 +259,52 @@ export default function Student() {
       </Box>
 
       <Box component="form">
-        {/* 
-        {fields.map((field) => (
-          <TextField
-            key={field.id}
-            sx={{ mx: 4, my: 2 }}
-            id={`outlined-${field.id}`}
-            label={field.label}
-            variant="outlined"
-            value={student[field.id]}
-            onChange={(event) =>
-              setStudent({
-                ...student,
-                [field.id]: event.target.value,
-              })
-            }
-          />
-        ))}
 
- */}
-        {fields.map((field) => (
-          <TextField
-            key={field.id}
-            sx={{ mx: 4, my: 2 }}
-            id={`outlined-${field.id}`}
-            label={field.label}
-            variant="outlined"
-            value={student[field.id]}
-            onChange={(event) =>
-              setStudent({
-                ...student,
-                [field.id]: event.target.value,
-              })
-            }
-            error={
-              field.id === "fname" || field.id === "lname"
-                ? student[field.id] && !isValidName(student[field.id]) // Check name validity
-                : student[field.id] && !isValidScore(student[field.id]) // Check score validity
-            }
-            helperText={
-              field.id === "fname" || field.id === "lname"
-                ? student[field.id] && !isValidName(student[field.id])
-                  ? "Name must only contain letters."
-                  : ""
-                : student[field.id] && !isValidScore(student[field.id])
-                ? "Score must be a number between 0 and 20."
-                : ""
-            }
-          />
-        ))}
+          {fields.map((field) => (
+  <TextField
+    key={field.id}
+    sx={{ mx: 4, my: 2 }}
+    id={`outlined-${field.id}`}
+    label={field.label}
+    variant="outlined"
+    value={student[field.id]}
+    onChange={(event) =>
+      setStudent({
+        ...student,
+        [field.id]: event.target.value,
+      })
+    }
+    error={
+      field.id === "fname" || field.id === "lname"
+        ? Boolean(student[field.id] && !isValidName(student[field.id])) // Ensure boolean
+        : Boolean(student[field.id] && !isValidScore(student[field.id])) // Ensure boolean
+    }
+    helperText={
+      field.id === "fname" || field.id === "lname"
+        ? student[field.id] && !isValidName(student[field.id])
+          ? "Name must only contain letters."
+          : ""
+        : student[field.id] && !isValidScore(student[field.id])
+        ? "Score must be a number between 0 and 20."
+        : ""
+    }
+  />
+))}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         <Box sx={{ display: "flex", width: "100%", mt: 6 }}>
           <Button

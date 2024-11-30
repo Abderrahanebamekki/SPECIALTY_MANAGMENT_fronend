@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 // @ts-nocheck
-
 import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
@@ -9,13 +8,14 @@ import TextField from "@mui/material/TextField";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import Typography from "@mui/material/Typography";
-import Paper from "@mui/material/Paper";
-import { styled } from "@mui/material/styles";
+import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import { DataGrid } from "@mui/x-data-grid";
+import Paper from "@mui/material/Paper";
+import { styled } from "@mui/material/styles";
+
 // import { GridRowsProp, GridColDef } from "@mui/x-data-grid";
 export default function Choice() {
   //! -----------------------------------------------> Declaration <------------------------
@@ -36,6 +36,8 @@ export default function Choice() {
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [assignedChoices, setAssignedChoices] = useState({});
   //* ===========> Filter Student <=============
   const filteredStudents = students.filter(
     (student) =>
@@ -47,28 +49,31 @@ export default function Choice() {
 
   const processedStudents = filteredStudents.map((student) => {
     const choices = student.choices || [];
+    console.log(choices);
     return {
       ...student,
       choice1:
-        choices.find((c) => c.orderChice === 1)?.nameSpecialty || "No Choice1",
+        choices.find((c) => c.orderChoice === 1)?.specialityName ||
+        "No Choice 1",
       choice2:
-        choices.find((c) => c.orderChice === 2)?.nameSpecialty || "No Choice2",
+        choices.find((c) => c.orderChoice === 2)?.specialityName ||
+        "No Choice2",
       choice3:
-        choices.find((c) => c.orderChice === 3)?.nameSpecialty ||
+        choices.find((c) => c.orderChoice === 3)?.specialityName ||
         "No Choice 3",
       choice4:
-        choices.find((c) => c.orderChice === 4)?.nameSpecialty ||
+        choices.find((c) => c.orderChoice === 4)?.specialityName ||
         "No Choice 4",
+      assignedChoice:
+        assignedChoices[student.nbrStudent] ||
+        student.assignedChoice ||
+        "Not Assigned",
     };
   });
 
   //* ===========>  Selected Choices <=============
-  const [selectedChoices, setSelectedChoices] = useState({
-    1: "",
-    2: "",
-    3: "",
-    4: "",
-  });
+
+  const [selectedChoices, setSelectedChoices] = useState([]);
   //* ===========> DataGrid Columns <=============
   const columns = [
     { field: "nbrStudent", headerName: "ID", width: 10 },
@@ -79,11 +84,11 @@ export default function Choice() {
     { field: "moyS3", headerName: "Moy S3", width: 80 },
     { field: "moyS4", headerName: "Moy S4", width: 80 },
     { field: "MoyGeneral", headerName: "Moy General", width: 110 },
-
-    { field: "choice1", headerName: "Choice 1", width: 130 },
-    { field: "choice2", headerName: "Choice 2", width: 130 },
-    { field: "choice3", headerName: "Choice 3", width: 130 },
-    { field: "choice4", headerName: "Choice 4", width: 130 },
+    { field: "choice1", headerName: "Choice 1", width: 110 },
+    { field: "choice2", headerName: "Choice 2", width: 110 },
+    { field: "choice3", headerName: "Choice 3", width: 110 },
+    { field: "choice4", headerName: "Choice 4", width: 110 },
+    { field: "assignedChoice", headerName: "Assigned Choice", width: 150 },
   ];
 
   //! -----------------------------------------------> Functions <------------------------
@@ -92,16 +97,18 @@ export default function Choice() {
   useEffect(() => {
     fetchStudents();
     fetchSpecialities();
-  }, [students,specialties]);
+  }, []);
 
   //? ===========> Handel Change on Add Choice  <=============
 
   const handleChoiceChange = (order, value) => {
     // Update the selectedChoices state when a new choice is selected
-    setSelectedChoices((prevChoices) => ({
-      ...prevChoices,
-      [order]: value, // Update the specific choice's value
-    }));
+    // setSelectedChoices((prevChoices) => ({
+    //   ...prevChoices,
+    //   [order]: value, // Update the specific choice's value
+    // }));
+
+    setSelectedChoices({ ...selectedChoices, [order]: value });
   };
 
   //? ===========> Fetch Specialities<=============
@@ -116,6 +123,7 @@ export default function Choice() {
       setSpecialtiesNames(names); // Extract names
     } catch (error) {
       console.error("Error fetching specialties:", error);
+      setAlertMessage("Error fetching specialties");
     }
   };
 
@@ -138,42 +146,76 @@ export default function Choice() {
   const addChoice = async () => {
     if (!selectedStudent) {
       setError(true);
+      setAlertMessage("No Selected Student!");
       return;
     }
 
-    // Validate that all choices are filled
-    if (Object.values(selectedChoices).some((choice) => !choice)) {
-      setError(true);
-      return;
-    }
-
-    const updatedChoices = Object.entries(selectedChoices).map(
-      ([order, name]) => ({
-        orderChoice: parseInt(order),
-        nameSpecialty: name,
-      })
-    );
+    const updatedChoices = Object.entries(selectedChoices)
+      .filter(([order, name]) => name && !isNaN(parseInt(order, 10))) // Ensure both order and name are valid
+      .map(([order, name]) => ({
+        choiceOrder: parseInt(order, 10), // Convert order to integer
+        specialtyName: name, // Use `specialityName` to match backend DTO
+      }));
 
     try {
+      // Prepare the payload
       const payload = {
-        nbrStudent: selectedStudent.nbrStudent,
-        choices: updatedChoices, // Send the updated choices to the backend
+        nbrStudent: selectedStudent.nbrStudent, // Send the student's ID
+        choices: updatedChoices, // Send the list of choices
       };
 
-      const response = await fetch("http://localhost:3002/choices/add", {
+      console.log("payload :", payload);
+      // Make the POST request to the backend
+      const response = await fetch("http://localhost:9090/choices/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload), // Send the entire payload
       });
 
       if (response.ok) {
         setSuccess(true);
+        setAlertMessage("Choices Successfully Assigned!");
       } else {
         setError(true);
+        const errorText = await response.text();
+        setAlertMessage(`Response Error: ${errorText}`);
       }
     } catch (error) {
       console.error("Error adding choices:", error);
+      setAlertMessage("Error adding choices!");
       setError(true);
+    }
+  };
+
+  //? ===========> Delete Choice <=============
+  const deleteChoices = async () => {
+    if (!selectedStudent) {
+      setError(true);
+      setAlertMessage("No Selected Student!");
+      return;
+    }
+
+    try {
+      // Make the DELETE request
+      const response = await fetch(
+        `http://localhost:9090/choices/delete/${selectedStudent.nbrStudent}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (response.ok) {
+        setSuccess(true);
+        setAlertMessage("Choices Successfully Deleted!");
+      } else {
+        setError(true);
+        const errorText = await response.text();
+        setAlertMessage(`Response Error: ${errorText}`);
+      }
+    } catch (error) {
+      console.error("Error deleting choices:", error);
+      setError(true);
+      setAlertMessage("Error deleting choices!");
     }
   };
 
@@ -182,77 +224,144 @@ export default function Choice() {
   const updateChoice = async () => {
     if (!selectedStudent) {
       setError(true);
+      setAlertMessage("No Selected Student!");
       return;
     }
 
-    const updatedChoices = Object.entries(selectedChoices).map(
-      ([order, name]) => ({
-        orderChoice: parseInt(order),
-        nameSpecialty: name,
-      })
-    );
+    // Validate that no duplicate specialty names are selected
+    const choiceNames = Object.values(selectedChoices).filter((name) => name);
+    const hasDuplicates = new Set(choiceNames).size !== choiceNames.length;
+
+    if (hasDuplicates) {
+      setError(true);
+      setAlertMessage("Duplicate specialty choices are not allowed!");
+      return;
+    }
+
+    // Map selected choices to match the backend's expected structure
+    const updatedChoices = Object.entries(selectedChoices)
+      .filter(([order, name]) => name && !isNaN(parseInt(order, 10))) // Ensure valid input
+      .map(([order, name]) => ({
+        choiceOrder: parseInt(order, 10),
+        specialtyName: name, // Ensure spelling matches backend expectation
+      }));
 
     try {
-      const payload = {
-        nbrStudent: selectedStudent.nbrStudent,
-        choices: updatedChoices, // Send the updated choices to the backend
-      };
+      console.log("Updating choices:", updatedChoices);
 
-      const response = await fetch("http://localhost:3002/choices/add", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        setSuccess(true);
-      } else {
-        setError(true);
-      }
-    } catch (error) {
-      console.error("Error updating choices:", error);
-      setError(true);
-    }
-  };
-
-  //? ===========> Delete Choice <=============
-
-  const deleteChoice = async () => {
-    if (!selectedStudent) {
-      setError(true);
-      return;
-    }
-    if (
-      !window.confirm("Are you sure you want to delete this student's choices?")
-    ) {
-      return;
-    }
-    try {
       const response = await fetch(
-        `http://localhost:3002/choices/delete/${selectedStudent.nbrStudent}`,
+        `http://localhost:9090/choices/update/${selectedStudent.nbrStudent}`,
         {
-          method: "DELETE",
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedChoices),
         }
       );
 
       if (response.ok) {
         setSuccess(true);
-        // Optionally, refresh data here
+        setAlertMessage("Choices successfully updated!");
       } else {
         setError(true);
+        const errorText = await response.text();
+        setAlertMessage(`Response Error: ${errorText}`);
       }
     } catch (error) {
-      console.error("Error deleting choices:", error);
+      console.error("Error updating choices:", error);
+      setAlertMessage("Error updating choices!");
       setError(true);
     }
   };
 
+  //? ===========> Assign Choice <=============
+  //? ===========> Assign Choice <=============
+  const assignChoices = async () => {
+    try {
+      // 1. Sort students by MoyGeneral in descending order
+      const sortedStudents = [...students].sort(
+        (a, b) => b.MoyGeneral - a.MoyGeneral
+      );
+
+      // Track remaining places for each specialty
+      let specialtyPlaces = {};
+
+      // Initialize specialty places
+      for (const specialty of specialties) {
+        specialtyPlaces[specialty.name] = specialty.numberOfPlaces;
+      }
+
+      // Track assignments
+      const assignments = {};
+
+      // 2. Process each student
+      for (const student of sortedStudents) {
+        let assigned = false;
+
+        // Get student's choices sorted by order
+        const sortedChoices = (student.choices || []).sort(
+          (a, b) => a.orderChoice - b.orderChoice
+        );
+
+        // 3 & 4. Try each choice in order
+        for (const choice of sortedChoices) {
+          const specialtyName = choice.specialityName;
+
+          // Check if specialty has available places
+          if (specialtyPlaces[specialtyName] > 0) {
+            // Assign the choice
+            assignments[student.nbrStudent] = specialtyName;
+            specialtyPlaces[specialtyName]--;
+
+            // Update specialty places in backend
+            await fetch(`http://localhost:9090/specialities/update-places`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name: specialtyName,
+                numberOfPlaces: specialtyPlaces[specialtyName],
+              }),
+            });
+
+            // Save assignment to backend
+            await fetch(`http://localhost:9090/student/assign-choice`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                nbrStudent: student.nbrStudent,
+                assignedChoice: specialtyName,
+              }),
+            });
+
+            assigned = true;
+            break;
+          }
+        }
+
+        if (!assigned) {
+          assignments[student.nbrStudent] = "No Assignment";
+        }
+      }
+
+      // 5. Update state to show assignments
+      setAssignedChoices(assignments);
+
+      // Refresh student data to show new assignments
+      await fetchStudents();
+
+      setSuccess(true);
+      setAlertMessage("Choices assigned successfully!");
+    } catch (error) {
+      console.error("Error assigning choices:", error);
+      setError(true);
+      setAlertMessage("Error assigning choices!");
+    }
+  };
   //? ===========> Handel Row Click <=============
 
   const handleRowClick = (row) => {
     console.log("the student clicked is :", row);
 
-    setStudent(row);
+    setSelectedStudent(row);
 
     // Initialize the selectedChoices with the student's choices
     const initialChoices = row.choices.reduce((acc, choice) => {
@@ -289,10 +398,8 @@ export default function Choice() {
         <DataGrid
           rows={processedStudents}
           columns={columns}
-          // getRowId={(row) => row.nbrStudent}
           getRowId={(row) => row.nbrStudent}
           pageSize={4}
-          // checkboxSelection
           onRowClick={({ row }) => handleRowClick(row)}
           sx={{
             height: 300,
@@ -345,6 +452,7 @@ export default function Choice() {
                 </InputLabel>
 
                 <Select
+                  key={order}
                   labelId={`choice-${order}-label`}
                   id={`choice-${order}`}
                   value={selectedChoices[order] || ""}
@@ -365,7 +473,7 @@ export default function Choice() {
           })}
         </Box>
 
-        {/*? ============>  Mangment Buttons    <================================ */}
+        {/*? ============>  Management Buttons    <================================ */}
 
         <Box
           sx={{
@@ -397,9 +505,18 @@ export default function Choice() {
             size="large"
             variant="contained"
             color="error"
-            onClick={deleteChoice}
+            onClick={deleteChoices}
           >
             Delete
+          </Button>
+          <Button
+            sx={{ display: "block", ml: 1 }}
+            size="large"
+            variant="contained"
+            color="secondary"
+            onClick={assignChoices}
+          >
+            Assign
           </Button>
         </Box>
       </Container>
@@ -422,6 +539,15 @@ export default function Choice() {
       >
         <Alert severity="success" onClose={() => setSuccess(false)}>
           Action successful!
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={error}
+        autoHideDuration={3000}
+        onClose={() => setError(false)}
+      >
+        <Alert severity="error" onClose={() => setError(false)}>
+          {alertMessage}
         </Alert>
       </Snackbar>
     </>
