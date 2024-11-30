@@ -1,0 +1,93 @@
+{
+  "students": [
+    {
+      "nbrStudent": 5,
+      "fname": "Elden",
+      "lname": "Minucci",
+      "moyS1": 7.08,
+      "moyS2": 13.99,
+      "moyS3": 6.05,
+      "moyS4": 11.08,
+      "choices": []
+    },
+    {
+      "nbrStudent": 4,
+      "fname": "Joanne",
+      "lname": "Karppi",
+      "moyS1": 3.85,
+      "moyS2": 8.44,
+      "moyS3": 8.06,
+      "moyS4": 19.33,
+      "choices": [
+        {
+          "orderChice": 1,
+          "nameSpeciality": "TI"
+        },
+        {
+          "orderChice": 2,
+          "nameSpeciality": "GI"
+        },
+        {
+          "orderChice": 3,
+          "nameSpeciality": "ScI"
+        },
+        {
+          "orderChice": 4,
+          "nameSpeciality": "SI"
+        }
+      ]
+    },
+    {
+      "nbrStudent": 1,
+      "fname": "Giffy",
+      "lname": "Kemmer",
+      "moyS1": 17.36,
+      "moyS2": 12.13,
+      "moyS3": 3.62,
+      "moyS4": 3.39,
+      "choices": [
+        {
+          "orderChice": 1,
+          "nameSpeciality": "SI"
+        }
+      ]
+    },
+    {
+      "nbrStudent": 2,
+      "fname": "Drucy",
+      "lname": "Pfeifer",
+      "moyS1": 12.25,
+      "moyS2": 17.14,
+      "moyS3": 14.33,
+      "moyS4": 15.45,
+      "choices": []
+    },
+    {
+      "nbrStudent": 3,
+      "fname": "Aurel",
+      "lname": "Tabary",
+      "moyS1": 11.64,
+      "moyS2": 13.54,
+      "moyS3": 6.93,
+      "moyS4": 11.96,
+      "choices": [
+        {
+          "orderChice": 1,
+          "nameSpeciality": "SI"
+        },
+        {
+          "orderChice": 2,
+          "nameSpeciality": "TI"
+        },
+        {
+          "orderChice": 3,
+          "nameSpeciality": "ScI"
+        },
+        {
+          "orderChice": 4,
+          "nameSpeciality": "GL"
+        }
+      ]
+    }
+  ]
+}

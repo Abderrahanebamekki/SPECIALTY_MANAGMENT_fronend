@@ -1,0 +1,24 @@
+{
+  "specialites": [
+    {
+      "nbrSpeciality": "1",
+      "name": "SCI",
+      "numberOfPlaces": 85
+    },
+    {
+      "nbrSpeciality": "2",
+      "name": "GL",
+      "numberOfPlaces": 96
+    },
+    {
+      "nbrSpeciality": "3",
+      "name": "TI",
+      "numberOfPlaces": 9
+    },
+    {
+      "nbrSpeciality": "4",
+      "name": "SI",
+      "numberOfPlaces": 40
+    }
+  ]
+}
