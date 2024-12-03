@@ -76,19 +76,84 @@ export default function Choice() {
   const [selectedChoices, setSelectedChoices] = useState([]);
   //* ===========> DataGrid Columns <=============
   const columns = [
-    { field: "nbrStudent", headerName: "ID", width: 10 },
-    { field: "fname", headerName: "First Name", width: 100 },
-    { field: "lname", headerName: "Last Name", width: 100 },
-    { field: "moyS1", headerName: "Moy S1", width: 80 },
-    { field: "moyS2", headerName: "Moy S2", width: 80 },
-    { field: "moyS3", headerName: "Moy S3", width: 80 },
-    { field: "moyS4", headerName: "Moy S4", width: 80 },
-    { field: "MoyGeneral", headerName: "Moy General", width: 110 },
-    { field: "choice1", headerName: "Choice 1", width: 110 },
-    { field: "choice2", headerName: "Choice 2", width: 110 },
-    { field: "choice3", headerName: "Choice 3", width: 110 },
-    { field: "choice4", headerName: "Choice 4", width: 110 },
-    { field: "assignedChoice", headerName: "Assigned Choice", width: 150 },
+    {
+      field: "nbrStudent",
+      headerName: "ID",
+      headerClassName: "super-app-theme--header",
+      flex: 0.3,
+    },
+    {
+      field: "fname",
+      headerName: "First Name",
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
+    {
+      field: "lname",
+      headerName: "Last Name",
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
+    {
+      field: "moyS1",
+      headerName: "Moy S1",
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
+    {
+      field: "moyS2",
+      headerName: "Moy S2",
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
+    {
+      field: "moyS3",
+      headerName: "Moy S3",
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
+    {
+      field: "moyS4",
+      headerName: "Moy S4",
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
+    {
+      field: "MoyGeneral",
+      headerName: "Moy General",
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
+    {
+      field: "choice1",
+      headerName: "Choice 1",
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
+    {
+      field: "choice2",
+      headerName: "Choice 2",
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
+    {
+      field: "choice3",
+      headerName: "Choice 3",
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
+    {
+      field: "choice4",
+      headerName: "Choice 4",
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
+    {
+      field: "  ",
+      headerName: "Assigned Choice",
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
   ];
 
   //! -----------------------------------------------> Functions <------------------------
@@ -194,6 +259,13 @@ export default function Choice() {
       setAlertMessage("No Selected Student!");
       return;
     }
+    const userConfirmed = window.confirm(
+      `Are you sure you want to delete All Choices for the student: ${selectedStudent.fname} ${selectedStudent.lname} ?`
+    );
+
+    if (!userConfirmed) {
+      return; // Exit the function if the user cancels
+    }
 
     try {
       // Make the DELETE request
@@ -274,7 +346,6 @@ export default function Choice() {
   };
 
   //? ===========> Assign Choice <=============
-  //? ===========> Assign Choice <=============
   const assignChoices = async () => {
     try {
       // 1. Sort students by MoyGeneral in descending order
@@ -304,7 +375,7 @@ export default function Choice() {
 
         // 3 & 4. Try each choice in order
         for (const choice of sortedChoices) {
-          const specialtyName = choice.specialityName;
+          const specialtyName = choice.specialtyName;
 
           // Check if specialty has available places
           if (specialtyPlaces[specialtyName] > 0) {
@@ -313,24 +384,25 @@ export default function Choice() {
             specialtyPlaces[specialtyName]--;
 
             // Update specialty places in backend
-            await fetch(`http://localhost:9090/specialities/update-places`, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                name: specialtyName,
-                numberOfPlaces: specialtyPlaces[specialtyName],
-              }),
-            });
 
-            // Save assignment to backend
-            await fetch(`http://localhost:9090/student/assign-choice`, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                nbrStudent: student.nbrStudent,
-                assignedChoice: specialtyName,
-              }),
-            });
+            // await fetch(`http://localhost:9090/specialities/decrease-place/`, {
+            //   method: "PUT",
+            //   headers: { "Content-Type": "application/json" },
+            //   body: JSON.stringify({
+            //     name: specialtyName,
+            //     numberOfPlaces: specialtyPlaces[specialtyName],
+            //   }),
+            // });
+
+            // // Save assignment to backend
+            // await fetch(`http://localhost:9090/student/assign-choice`, {
+            //   method: "PUT",
+            //   headers: { "Content-Type": "application/json" },
+            //   body: JSON.stringify({
+            //     nbrStudent: student.nbrStudent,
+            //     assignedChoice: specialtyName,
+            //   }),
+            // });
 
             assigned = true;
             break;
@@ -376,10 +448,36 @@ export default function Choice() {
     <>
       {/*? ===========>  Header Text <============= */}
 
-      <Typography variant="h3" gutterBottom sx={{ mx: 9, display: "flex" }}>
+
+      <Typography
+        variant="h2"
+        gutterBottom
+        sx={{
+          mx: 9,
+          display: "flex",
+          fontSize: "2.5rem",
+          fontWeight: "800",
+          color: "#2c3e50",
+          padding: "20px 0",
+          borderBottom: "3px solid #ffa500",
+          marginBottom: "30px",
+          position: "relative",
+          "&::after": {
+            content: '""',
+            position: "absolute",
+            bottom: "-3px",
+            left: 0,
+            width: "60px",
+            height: "3px",
+          },
+          "&:hover": {
+            color: "#ffa500",
+            transition: "color 0.3s ease-in-out",
+          },
+        }}
+      >
         Manage Choices
       </Typography>
-
       {/*? ===================================================>  Search Textfield <================================ */}
 
       <Box sx={{ mx: 4, my: 2, display: "flex", alignItems: "center" }}>
@@ -394,7 +492,27 @@ export default function Choice() {
 
       {/*? ===================================================>  Data Grid  <================================ */}
 
-      <Box sx={{ height: 300, width: "100%" }}>
+      <Box
+        sx={{
+          height: 300,
+          width: "100%",
+          "& .super-app-theme--header": {
+            backgroundColor: "#ffa500",
+            color: "#fff",
+            fontWeight: "bold",
+            fontSize: "16px",
+            "& .MuiDataGrid-columnSeparator": {
+              color: "#fff",
+            },
+            "& .MuiDataGrid-menuIcon": {
+              color: "#fff",
+            },
+            "& .MuiDataGrid-sortIcon": {
+              color: "#fff",
+            },
+          },
+        }}
+      >
         <DataGrid
           rows={processedStudents}
           columns={columns}
@@ -405,6 +523,25 @@ export default function Choice() {
             height: 300,
             width: "100%",
             mx: "auto",
+            border: "none",
+            "& .MuiDataGrid-cell": {
+              borderBottom: "1px solid #f0f0f0",
+            },
+            "& .MuiDataGrid-row": {
+              "&:hover": {
+                backgroundColor: "#fff8e1",
+                cursor: "pointer",
+              },
+              "&.Mui-selected": {
+                backgroundColor: "#fff3e0",
+                "&:hover": {
+                  backgroundColor: "#ffe0b2",
+                },
+              },
+            },
+            "& .MuiDataGrid-columnSeparator": {
+              display: "none",
+            },
           }}
         />
       </Box>

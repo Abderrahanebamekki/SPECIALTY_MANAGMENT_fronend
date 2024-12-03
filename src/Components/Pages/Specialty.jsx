@@ -132,6 +132,13 @@ export default function Specialty() {
       setError(true);
       return;
     }
+    const userConfirmed = window.confirm(
+      `Are you sure you want to delete the Specialty: ${selectedSpecialty.name} ?`
+    );
+
+    if (!userConfirmed) {
+      return; // Exit the function if the user cancels
+    }
 
     try {
       const response = await fetch(
@@ -167,9 +174,30 @@ export default function Specialty() {
   );
 
   const columns = [
-    { field: "nbrSpecialty", headerName: "ID", width: 100 },
-    { field: "name", headerName: "Name", width: 200 },
-    { field: "numberOfPlaces", headerName: "Number of Places", width: 150 },
+    {
+      field: "nbrSpecialty",
+      headerName: "ID",
+      headerAlign: "center",
+      align: "center",
+      flex: 1,
+      headerClassName: "super-app-theme--header",
+    },
+    {
+      field: "name",
+      headerName: "Name",
+      flex: 1,
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "super-app-theme--header",
+    },
+    {
+      field: "numberOfPlaces",
+      headerName: "Number of Places",
+      flex: 1,
+      headerAlign: "center",
+      headerClassName: "super-app-theme--header",
+      align: "center",
+    },
   ];
 
   //? ===========> Handle Row Click <=============
@@ -185,10 +213,35 @@ export default function Specialty() {
 
   return (
     <>
-      <Typography variant="h3" gutterBottom sx={{ mx: 9, display: "flex" }}>
+      <Typography
+        variant="h2"
+        gutterBottom
+        sx={{
+          mx: 9,
+          display: "flex",
+          fontSize: "2.5rem",
+          fontWeight: "800",
+          color: "#2c3e50",
+          padding: "20px 0",
+          borderBottom: "3px solid #ffa500",
+          marginBottom: "30px",
+          position: "relative",
+          "&::after": {
+            content: '""',
+            position: "absolute",
+            bottom: "-3px",
+            left: 0,
+            width: "60px",
+            height: "3px",
+          },
+          "&:hover": {
+            color: "#ffa500",
+            transition: "color 0.3s ease-in-out",
+          },
+        }}
+      >
         Manage Specialties
       </Typography>
-
       <Box sx={{ mx: 4, my: 2, display: "flex", alignItems: "center" }}>
         <TextField
           label="Search by ID or Name"
@@ -199,10 +252,29 @@ export default function Specialty() {
         />
       </Box>
 
-      <Box sx={{ height: 300, width: "100%" }}>
+      <Box
+        sx={{
+          height: 300,
+          width: "100%",
+          "& .super-app-theme--header": {
+            backgroundColor: "#ffa500",
+            color: "#fff",
+            fontWeight: "bold",
+            fontSize: "16px",
+            "& .MuiDataGrid-columnSeparator": {
+              color: "#fff",
+            },
+            "& .MuiDataGrid-menuIcon": {
+              color: "#fff",
+            },
+            "& .MuiDataGrid-sortIcon": {
+              color: "#fff",
+            },
+          },
+        }}
+      >
         <DataGrid
           rows={filteredSpecialties}
-          // row={specialties}
           columns={columns}
           getRowId={(row) => row.nbrSpecialty}
           pageSize={4}
@@ -211,6 +283,25 @@ export default function Specialty() {
             height: 300,
             width: "100%",
             mx: "auto",
+            border: "none",
+            "& .MuiDataGrid-cell": {
+              borderBottom: "1px solid #f0f0f0",
+            },
+            "& .MuiDataGrid-row": {
+              "&:hover": {
+                backgroundColor: "#fff8e1",
+                cursor: "pointer",
+              },
+              "&.Mui-selected": {
+                backgroundColor: "#fff3e0",
+                "&:hover": {
+                  backgroundColor: "#ffe0b2",
+                },
+              },
+            },
+            "& .MuiDataGrid-columnSeparator": {
+              display: "none",
+            },
           }}
         />
       </Box>

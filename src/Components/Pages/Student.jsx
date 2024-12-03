@@ -158,7 +158,13 @@ export default function Student() {
       setError(true);
       return;
     }
+    const userConfirmed = window.confirm(
+      `Are you sure you want to delete the student: ${selectedStudent.fname} ${selectedStudent.lname}?`
+    );
 
+    if (!userConfirmed) {
+      return; // Exit the function if the user cancels
+    }
     try {
       const response = await fetch(
         `http://localhost:9090/student/delete/${selectedStudent.nbrStudent}`,
@@ -200,14 +206,55 @@ export default function Student() {
   );
 
   const columns = [
-    { field: "nbrStudent", headerName: "ID", width: 100 },
-    { field: "fname", headerName: "First Name", width: 150 },
-    { field: "lname", headerName: "Last Name", width: 150 },
-    { field: "moyS1", headerName: "Moy S1", width: 100 },
-    { field: "moyS2", headerName: "Moy S2", width: 100 },
-    { field: "moyS3", headerName: "Moy S3", width: 100 },
-    { field: "moyS4", headerName: "Moy S4", width: 100 },
-    { field: "MoyGeneral", headerName: "Moy General", width: 150 },
+    {
+      field: "nbrStudent",
+      headerName: "ID",
+      headerClassName: "super-app-theme--header",
+      flex: 0.9,
+    },
+    {
+      field: "fname",
+      headerName: "First Name",
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
+    {
+      field: "lname",
+      headerName: "Last Name",
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
+    {
+      field: "moyS1",
+      headerName: "Moy S1",
+
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
+    {
+      field: "moyS2",
+      headerName: "Moy S2",
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
+    {
+      field: "moyS3",
+      headerName: "Moy S3",
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
+    {
+      field: "moyS4",
+      headerName: "Moy S4",
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
+    {
+      field: "MoyGeneral",
+      headerName: "Moy General",
+      headerClassName: "super-app-theme--header",
+      flex: 1,
+    },
   ];
 
   //? ===========> Handel Row Click <=============
@@ -229,7 +276,33 @@ export default function Student() {
 
   return (
     <>
-      <Typography variant="h3" gutterBottom sx={{ mx: 9, display: "flex" }}>
+      <Typography
+        variant="h2"
+        gutterBottom
+        sx={{
+          mx: 9,
+          display: "flex",
+          fontSize: "2.5rem",
+          fontWeight: "800",
+          color: "#2c3e50",
+          padding: "20px 0",
+          borderBottom: "3px solid #ffa500",
+          marginBottom: "30px",
+          position: "relative",
+          "&::after": {
+            content: '""',
+            position: "absolute",
+            bottom: "-3px",
+            left: 0,
+            width: "60px",
+            height: "3px",
+          },
+          "&:hover": {
+            color: "#ffa500",
+            transition: "color 0.3s ease-in-out",
+          },
+        }}
+      >
         Manage Students
       </Typography>
 
@@ -243,7 +316,27 @@ export default function Student() {
         />
       </Box>
 
-      <Box sx={{ height: 300, width: "100%" }}>
+      <Box
+        sx={{
+          height: 300,
+          width: "100%",
+          "& .super-app-theme--header": {
+            backgroundColor: "#ffa500",
+            color: "#fff",
+            fontWeight: "bold",
+            fontSize: "16px",
+            "& .MuiDataGrid-columnSeparator": {
+              color: "#fff",
+            },
+            "& .MuiDataGrid-menuIcon": {
+              color: "#fff",
+            },
+            "& .MuiDataGrid-sortIcon": {
+              color: "#fff",
+            },
+          },
+        }}
+      >
         <DataGrid
           rows={filteredStudents}
           columns={columns}
@@ -254,57 +347,60 @@ export default function Student() {
             height: 300,
             width: "100%",
             mx: "auto",
+            border: "none",
+            "& .MuiDataGrid-cell": {
+              borderBottom: "1px solid #f0f0f0",
+            },
+            "& .MuiDataGrid-row": {
+              "&:hover": {
+                backgroundColor: "#fff8e1",
+                cursor: "pointer",
+              },
+              "&.Mui-selected": {
+                backgroundColor: "#fff3e0",
+                "&:hover": {
+                  backgroundColor: "#ffe0b2",
+                },
+              },
+            },
+            "& .MuiDataGrid-columnSeparator": {
+              display: "none",
+            },
           }}
         />
       </Box>
 
       <Box component="form">
-
-          {fields.map((field) => (
-  <TextField
-    key={field.id}
-    sx={{ mx: 4, my: 2 }}
-    id={`outlined-${field.id}`}
-    label={field.label}
-    variant="outlined"
-    value={student[field.id]}
-    onChange={(event) =>
-      setStudent({
-        ...student,
-        [field.id]: event.target.value,
-      })
-    }
-    error={
-      field.id === "fname" || field.id === "lname"
-        ? Boolean(student[field.id] && !isValidName(student[field.id])) // Ensure boolean
-        : Boolean(student[field.id] && !isValidScore(student[field.id])) // Ensure boolean
-    }
-    helperText={
-      field.id === "fname" || field.id === "lname"
-        ? student[field.id] && !isValidName(student[field.id])
-          ? "Name must only contain letters."
-          : ""
-        : student[field.id] && !isValidScore(student[field.id])
-        ? "Score must be a number between 0 and 20."
-        : ""
-    }
-  />
-))}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        {fields.map((field) => (
+          <TextField
+            key={field.id}
+            sx={{ mx: 4, my: 2 }}
+            id={`outlined-${field.id}`}
+            label={field.label}
+            variant="outlined"
+            value={student[field.id]}
+            onChange={(event) =>
+              setStudent({
+                ...student,
+                [field.id]: event.target.value,
+              })
+            }
+            error={
+              field.id === "fname" || field.id === "lname"
+                ? Boolean(student[field.id] && !isValidName(student[field.id])) // Ensure boolean
+                : Boolean(student[field.id] && !isValidScore(student[field.id])) // Ensure boolean
+            }
+            helperText={
+              field.id === "fname" || field.id === "lname"
+                ? student[field.id] && !isValidName(student[field.id])
+                  ? "Name must only contain letters."
+                  : ""
+                : student[field.id] && !isValidScore(student[field.id])
+                ? "Score must be a number between 0 and 20."
+                : ""
+            }
+          />
+        ))}
 
         <Box sx={{ display: "flex", width: "100%", mt: 6 }}>
           <Button
