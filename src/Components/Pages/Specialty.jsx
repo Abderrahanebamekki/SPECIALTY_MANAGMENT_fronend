@@ -280,10 +280,10 @@ export default function Specialty() {
           pageSize={4}
           onRowClick={({ row }) => handleRowClick(row)}
           sx={{
-            height: 300,
+            height: 290,
             width: "100%",
             mx: "auto",
-            border: "none",
+            border: "2px solid #ddd",
             "& .MuiDataGrid-cell": {
               borderBottom: "1px solid #f0f0f0",
             },
@@ -307,52 +307,67 @@ export default function Specialty() {
       </Box>
 
       <Box component="form">
-        {fields.map((field) => (
-          <TextField
-            key={field.id}
-            sx={{ mx: 4, my: 2 }}
-            id={`outlined-${field.id}`}
-            label={field.label}
-            variant="outlined"
-            value={specialty[field.id]}
-            onChange={(event) =>
-              setSpecialty({
-                ...specialty,
-                [field.id]: event.target.value,
-              })
-            }
-            error={
-              field.id === "name"
-                ? Boolean(
-                    specialty[field.id] && !isValidName(specialty[field.id])
-                  ) // Ensure boolean
-                : field.id === "numberOfPlaces"
-                ? Boolean(
-                    specialty[field.id] &&
-                      !isValidNumberOfPlaces(specialty[field.id])
-                  ) // Ensure boolean
-                : false
-            }
-            helperText={
-              field.id === "name"
-                ? specialty[field.id] && !isValidName(specialty[field.id])
-                  ? "Name must only contain letters."
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-around",
+          }}
+        >
+          {fields.map((field) => (
+            <TextField
+              key={field.id}
+              sx={{ mx: 4, my: 2 }}
+              id={`outlined-${field.id}`}
+              label={field.label}
+              variant="outlined"
+              value={specialty[field.id]}
+              onChange={(event) =>
+                setSpecialty({
+                  ...specialty,
+                  [field.id]: event.target.value,
+                })
+              }
+              error={
+                field.id === "name"
+                  ? Boolean(
+                      specialty[field.id] && !isValidName(specialty[field.id])
+                    ) // Ensure boolean
+                  : field.id === "numberOfPlaces"
+                  ? Boolean(
+                      specialty[field.id] &&
+                        !isValidNumberOfPlaces(specialty[field.id])
+                    ) // Ensure boolean
+                  : false
+              }
+              helperText={
+                field.id === "name"
+                  ? specialty[field.id] && !isValidName(specialty[field.id])
+                    ? "Name must only contain letters."
+                    : ""
+                  : field.id === "numberOfPlaces"
+                  ? specialty[field.id] &&
+                    !isValidNumberOfPlaces(specialty[field.id])
+                    ? "Number of places must be a valid number."
+                    : ""
                   : ""
-                : field.id === "numberOfPlaces"
-                ? specialty[field.id] &&
-                  !isValidNumberOfPlaces(specialty[field.id])
-                  ? "Number of places must be a valid number."
-                  : ""
-                : ""
-            }
-          />
-        ))}
+              }
+            />
+          ))}
+        </Box>
 
-        <Box sx={{ display: "flex", width: "100%", mt: 6 }}>
+        <Box
+          sx={{
+            display: "flex",
+            width: "100%",
+            justifyContent: "space-around",
+          }}
+        >
           <Button
             sx={{ display: "block", ml: 1 }}
             variant="contained"
             color="success"
+            size="large"
             onClick={addSpecialty}
           >
             Add
@@ -361,6 +376,7 @@ export default function Specialty() {
             sx={{ display: "block", ml: 1 }}
             variant="contained"
             color="primary"
+            size="large"
             onClick={updateSpecialty}
           >
             Update
@@ -369,6 +385,7 @@ export default function Specialty() {
             sx={{ display: "block", ml: 1 }}
             variant="contained"
             color="error"
+            size="large"
             onClick={deleteSpecialty}
           >
             Delete

@@ -149,8 +149,8 @@ export default function Choice() {
       flex: 1,
     },
     {
-      field: "  ",
-      headerName: "Assigned Choice",
+      field: "assignedChoice",
+      headerName: "Assigned",
       headerClassName: "super-app-theme--header",
       flex: 1,
     },
@@ -161,7 +161,7 @@ export default function Choice() {
   //? ===========>  Use Effect <=============
   useEffect(() => {
     fetchStudents();
-    fetchSpecialities();
+    fetchSpecialties();
   }, []);
 
   //? ===========> Handel Change on Add Choice  <=============
@@ -176,9 +176,9 @@ export default function Choice() {
     setSelectedChoices({ ...selectedChoices, [order]: value });
   };
 
-  //? ===========> Fetch Specialities<=============
+  //? ===========> Fetch Speciosities<=============
 
-  const fetchSpecialities = async () => {
+  const fetchSpecialties = async () => {
     try {
       const response = await fetch("http://localhost:9090/specialities/all");
       const data = await response.json();
@@ -348,84 +348,44 @@ export default function Choice() {
   //? ===========> Assign Choice <=============
   const assignChoices = async () => {
     try {
-      // 1. Sort students by MoyGeneral in descending order
-      const sortedStudents = [...students].sort(
-        (a, b) => b.MoyGeneral - a.MoyGeneral
+      // Show confirmation dialog
+      const confirmed = window.confirm(
+        "Are you sure you want to assign choices? This action will modify specialty placements and cannot be easily undone."
       );
 
-      // Track remaining places for each specialty
-      let specialtyPlaces = {};
-
-      // Initialize specialty places
-      for (const specialty of specialties) {
-        specialtyPlaces[specialty.name] = specialty.numberOfPlaces;
+      if (!confirmed) {
+        return;
       }
 
-      // Track assignments
-      const assignments = {};
+      setError(false);
+      setSuccess(false);
 
-      // 2. Process each student
-      for (const student of sortedStudents) {
-        let assigned = false;
-
-        // Get student's choices sorted by order
-        const sortedChoices = (student.choices || []).sort(
-          (a, b) => a.orderChoice - b.orderChoice
-        );
-
-        // 3 & 4. Try each choice in order
-        for (const choice of sortedChoices) {
-          const specialtyName = choice.specialtyName;
-
-          // Check if specialty has available places
-          if (specialtyPlaces[specialtyName] > 0) {
-            // Assign the choice
-            assignments[student.nbrStudent] = specialtyName;
-            specialtyPlaces[specialtyName]--;
-
-            // Update specialty places in backend
-
-            // await fetch(`http://localhost:9090/specialities/decrease-place/`, {
-            //   method: "PUT",
-            //   headers: { "Content-Type": "application/json" },
-            //   body: JSON.stringify({
-            //     name: specialtyName,
-            //     numberOfPlaces: specialtyPlaces[specialtyName],
-            //   }),
-            // });
-
-            // // Save assignment to backend
-            // await fetch(`http://localhost:9090/student/assign-choice`, {
-            //   method: "PUT",
-            //   headers: { "Content-Type": "application/json" },
-            //   body: JSON.stringify({
-            //     nbrStudent: student.nbrStudent,
-            //     assignedChoice: specialtyName,
-            //   }),
-            // });
-
-            assigned = true;
-            break;
-          }
+      const response = await fetch(
+        "http://localhost:9090/student/assign-choices",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
+      );
 
-        if (!assigned) {
-          assignments[student.nbrStudent] = "No Assignment";
-        }
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to assign choices");
       }
 
-      // 5. Update state to show assignments
-      setAssignedChoices(assignments);
+      const result = await response.text();
 
-      // Refresh student data to show new assignments
+      // Refresh the student data to show new assignments
       await fetchStudents();
 
       setSuccess(true);
-      setAlertMessage("Choices assigned successfully!");
+      setAlertMessage("Successfully assigned student choices!");
     } catch (error) {
-      console.error("Error assigning choices:", error);
+      console.error("Error in assignChoices:", error);
       setError(true);
-      setAlertMessage("Error assigning choices!");
+      setAlertMessage(error.message || "Failed to assign choices");
     }
   };
   //? ===========> Handel Row Click <=============
@@ -447,7 +407,6 @@ export default function Choice() {
   return (
     <>
       {/*? ===========>  Header Text <============= */}
-
 
       <Typography
         variant="h2"
@@ -523,7 +482,7 @@ export default function Choice() {
             height: 300,
             width: "100%",
             mx: "auto",
-            border: "none",
+            border: "2px solid #ddd",
             "& .MuiDataGrid-cell": {
               borderBottom: "1px solid #f0f0f0",
             },
@@ -564,7 +523,8 @@ export default function Choice() {
         <Box
           sx={{
             display: "flex",
-            m: 4,
+            mx: 2,
+            my: 1,
             gap: 4,
             alignContent: "center",
             justifyContent: "space-around",
@@ -594,7 +554,7 @@ export default function Choice() {
                   id={`choice-${order}`}
                   value={selectedChoices[order] || ""}
                   onChange={(e) => handleChoiceChange(order, e.target.value)}
-                  sx={{ width: "150px" }}
+                  sx={{ width: "160px" }}
                 >
                   {specialties.map((specialty) => (
                     <MenuItem
@@ -658,7 +618,7 @@ export default function Choice() {
         </Box>
       </Container>
 
-      {/*? ==================================================>  Error Mangment     <================================ */}
+      {/*? ==================================================>  Error Management     <================================ */}
 
       <Snackbar
         open={error}

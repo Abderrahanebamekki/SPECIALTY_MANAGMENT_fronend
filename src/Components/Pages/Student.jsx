@@ -347,7 +347,7 @@ export default function Student() {
             height: 300,
             width: "100%",
             mx: "auto",
-            border: "none",
+            border: "2px solid #ddd",
             "& .MuiDataGrid-cell": {
               borderBottom: "1px solid #f0f0f0",
             },
@@ -374,7 +374,7 @@ export default function Student() {
         {fields.map((field) => (
           <TextField
             key={field.id}
-            sx={{ mx: 4, my: 2 }}
+            sx={{ mx: 4, my: 1, height: "10" }}
             id={`outlined-${field.id}`}
             label={field.label}
             variant="outlined"
@@ -402,11 +402,18 @@ export default function Student() {
           />
         ))}
 
-        <Box sx={{ display: "flex", width: "100%", mt: 6 }}>
+        <Box
+          sx={{
+            display: "flex",
+            width: "100%",
+            justifyContent: "space-around",
+          }}
+        >
           <Button
             sx={{ display: "block", ml: 1 }}
             variant="contained"
             color="success"
+            size="large"
             onClick={addStudent}
           >
             Add
@@ -415,6 +422,7 @@ export default function Student() {
             sx={{ display: "block", ml: 1 }}
             variant="contained"
             color="primary"
+            size="large"
             onClick={updateStudent}
           >
             Update
@@ -423,6 +431,7 @@ export default function Student() {
             sx={{ display: "block", ml: 1 }}
             variant="contained"
             color="error"
+            size="large"
             onClick={deleteStudent}
           >
             Delete

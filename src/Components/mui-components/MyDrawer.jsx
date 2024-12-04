@@ -136,7 +136,7 @@ export default function MyDrawer({ drawerWidth }) {
             textShadow: '1px 1px 2px rgba(0,0,0,0.2)'
           }}
         >
-          O mangamnet
+          O MANAGEMENT 
         </Typography>
       </Box>
 
