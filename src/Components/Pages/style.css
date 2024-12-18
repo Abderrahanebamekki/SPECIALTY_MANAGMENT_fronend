@@ -1,0 +1,105 @@
+/* General Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 18px;
+    text-align: left;
+    background-color: #f9f9f9;
+}
+
+/* Table Header Styling */
+thead tr {
+    background-color: #0851ec;
+    color: #ffffff;
+    text-align: left;
+    font-weight: bold;
+}
+
+th, td {
+    border: 1px solid #dddddd;
+    padding: 12px 15px;
+}
+
+/* Table Row Styling */
+tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+
+/* Button Styling */
+button {
+    padding: 8px 12px;
+    font-size: 16px;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+button:first-of-type {
+    background-color: #4caf50; /* Update button: Green */
+    margin-right: 5px;
+}
+
+button:last-of-type {
+    background-color: #f44336; /* Delete button: Red */
+}
+
+.animated-button-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background-color: #0851ec;
+    border-radius: 50%; /* Default circular button */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: transform 0.3s ease, background-color 0.3s ease, border-radius 0.3s ease;
+}
+
+.animated-button-container:hover {
+    transform: scale(1.5, 1.5); /* Scale X and Y separately */
+    background-color: #0851ec;
+    border-radius: 50%; /* Change to a rounded rectangle */
+}
+
+
+.icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+    animation: pulse 1.5s infinite;
+}
+
+
+
+/* Animation: Pulsating effect */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+
+

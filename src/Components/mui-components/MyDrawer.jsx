@@ -12,7 +12,6 @@ import { useNavigate } from "react-router-dom";
 import { useState } from 'react';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 
 export default function MyDrawer({ drawerWidth }) {
   const navigate = useNavigate();
@@ -31,7 +30,7 @@ export default function MyDrawer({ drawerWidth }) {
         "& .MuiDrawer-paper": {
           width: drawerWidth,
           boxSizing: "border-box",
-          bgcolor: '#ffa500',
+          bgcolor: '#0022ff',
         },
       }}
       variant="permanent"
@@ -49,13 +48,6 @@ export default function MyDrawer({ drawerWidth }) {
           marginBottom: 2,
         }}
       >
-        <AutoStoriesIcon 
-          sx={{ 
-            fontSize: '3rem', 
-            color: 'white',
-            marginBottom: 1
-          }} 
-        />
         <Typography
           variant="h6"
           sx={{
@@ -67,7 +59,7 @@ export default function MyDrawer({ drawerWidth }) {
             textShadow: '1px 1px 2px rgba(0,0,0,0.2)'
           }}
         >
-          O MANAGEMENT 
+          Speciality Management
         </Typography>
       </Box>
 

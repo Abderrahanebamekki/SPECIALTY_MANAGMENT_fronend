@@ -1,652 +1,520 @@
 /* eslint-disable no-unused-vars */
 // @ts-nocheck
+
 import { useState, useEffect } from "react";
-import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
+import "./style.css";
+import axios from "axios";
 import Typography from "@mui/material/Typography";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import Select from "@mui/material/Select";
-import { DataGrid } from "@mui/x-data-grid";
-import Paper from "@mui/material/Paper";
-import { styled } from "@mui/material/styles";
 
-// import { GridRowsProp, GridColDef } from "@mui/x-data-grid";
-export default function Choice() {
-  //! -----------------------------------------------> Declaration <------------------------
-  const [student, setStudent] = useState({
-    nbrStudent: "",
-    fname: "",
-    lname: "",
-    moyS1: "",
-    moyS2: "",
-    moyS3: "",
-    moyS4: "",
-  });
-  const [students, setStudents] = useState([]);
-  const [specialties, setSpecialties] = useState([]);
-  const [specialtiesNames, setSpecialtiesNames] = useState([]);
-  const [selectedStudent, setSelectedStudent] = useState(null); // To track selected student for update
-  const [choices, setChoices] = useState(["", "", "", ""]); // State for the 4 choices
-  const [searchQuery, setSearchQuery] = useState("");
-  const [error, setError] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
-  const [assignedChoices, setAssignedChoices] = useState({});
-  //* ===========> Filter Student <=============
-  const filteredStudents = students.filter(
-    (student) =>
-      student.fname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.lname.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+const Notification = ({ message, type }) => {
+  if (!message) return null;
 
-  //* ===========> Students To Show  <=============
+  const style = {
+    padding: "10px",
+    color: type === "success" ? "green" : "red",
+    backgroundColor: type === "success" ? "#d4edda" : "#f8d7da",
+    border: type === "success" ? "1px solid #c3e6cb" : "1px solid #f5c6cb",
+    borderRadius: "4px",
+    margin: "10px 0",
+  };
 
-  const processedStudents = filteredStudents.map((student) => {
-    const choices = student.choices || [];
-    console.log(choices);
-    return {
-      ...student,
-      choice1:
-        choices.find((c) => c.orderChoice === 1)?.specialityName ||
-        "No Choice 1",
-      choice2:
-        choices.find((c) => c.orderChoice === 2)?.specialityName ||
-        "No Choice2",
-      choice3:
-        choices.find((c) => c.orderChoice === 3)?.specialityName ||
-        "No Choice 3",
-      choice4:
-        choices.find((c) => c.orderChoice === 4)?.specialityName ||
-        "No Choice 4",
-      assignedChoice:
-        assignedChoices[student.nbrStudent] ||
-        student.assignedChoice ||
-        "Not Assigned",
-    };
+  return <div style={style}>{message}</div>;
+};
+
+const Dropdown = ({ name, value, options, onChange }) => (
+    <div style={{ marginBottom: "10px" }}>
+      <label htmlFor={name} style={{ display: "block", marginBottom: "5px" }}>{name.charAt(0).toUpperCase() + name.slice(1)}:</label>
+      <select
+          id={name}
+          name={name}
+          value={value}
+          onChange={onChange}
+          style={{
+            width: "100%",
+            padding: "8px",
+            borderRadius: "4px",
+            border: "1px solid #ccc",
+          }}
+      >
+        <option>Select an option</option>
+        {options.map((option, index) => (
+            <option key={index} value={option.id}>{option.name}</option>
+        ))}
+      </select>
+    </div>
+);
+
+export default function Choice(){
+  const [studentsF, setStudentsF] = useState([]);
+  const [currentStudent, setCurrentStudent] = useState(null);
+  const [message, setMessage] = useState(null);
+  const [messageType, setMessageType] = useState("");
+  const [specialities, setSpecialities] = useState([]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [choices, setChoices] = useState({
+    choice1: null,
+    choice2: null,
+    choice3: null,
+    choice4: null,
   });
 
-  //* ===========>  Selected Choices <=============
-
-  const [selectedChoices, setSelectedChoices] = useState([]);
-  //* ===========> DataGrid Columns <=============
-  const columns = [
-    {
-      field: "nbrStudent",
-      headerName: "ID",
-      headerClassName: "super-app-theme--header",
-      flex: 0.3,
-    },
-    {
-      field: "fname",
-      headerName: "First Name",
-      headerClassName: "super-app-theme--header",
-      flex: 1,
-    },
-    {
-      field: "lname",
-      headerName: "Last Name",
-      headerClassName: "super-app-theme--header",
-      flex: 1,
-    },
-    {
-      field: "moyS1",
-      headerName: "Moy S1",
-      headerClassName: "super-app-theme--header",
-      flex: 1,
-    },
-    {
-      field: "moyS2",
-      headerName: "Moy S2",
-      headerClassName: "super-app-theme--header",
-      flex: 1,
-    },
-    {
-      field: "moyS3",
-      headerName: "Moy S3",
-      headerClassName: "super-app-theme--header",
-      flex: 1,
-    },
-    {
-      field: "moyS4",
-      headerName: "Moy S4",
-      headerClassName: "super-app-theme--header",
-      flex: 1,
-    },
-    {
-      field: "MoyGeneral",
-      headerName: "Moy General",
-      headerClassName: "super-app-theme--header",
-      flex: 1,
-    },
-    {
-      field: "choice1",
-      headerName: "Choice 1",
-      headerClassName: "super-app-theme--header",
-      flex: 1,
-    },
-    {
-      field: "choice2",
-      headerName: "Choice 2",
-      headerClassName: "super-app-theme--header",
-      flex: 1,
-    },
-    {
-      field: "choice3",
-      headerName: "Choice 3",
-      headerClassName: "super-app-theme--header",
-      flex: 1,
-    },
-    {
-      field: "choice4",
-      headerName: "Choice 4",
-      headerClassName: "super-app-theme--header",
-      flex: 1,
-    },
-    {
-      field: "assignedChoice",
-      headerName: "Assigned",
-      headerClassName: "super-app-theme--header",
-      flex: 1,
-    },
-  ];
-
-  //! -----------------------------------------------> Functions <------------------------
-
-  //? ===========>  Use Effect <=============
   useEffect(() => {
     fetchStudents();
-    fetchSpecialties();
   }, []);
 
-  //? ===========> Handel Change on Add Choice  <=============
-
-  const handleChoiceChange = (order, value) => {
-    // Update the selectedChoices state when a new choice is selected
-    // setSelectedChoices((prevChoices) => ({
-    //   ...prevChoices,
-    //   [order]: value, // Update the specific choice's value
-    // }));
-
-    setSelectedChoices({ ...selectedChoices, [order]: value });
-  };
-
-  //? ===========> Fetch Speciosities<=============
-
-  const fetchSpecialties = async () => {
-    try {
-      const response = await fetch("http://localhost:9090/specialities/all");
-      const data = await response.json();
-      // console.log(data);
-      setSpecialties(data); // Store the full specialties data
-      const names = data.map((spec) => spec.name || "Unnamed Specialty");
-      setSpecialtiesNames(names); // Extract names
-    } catch (error) {
-      console.error("Error fetching specialties:", error);
-      setAlertMessage("Error fetching specialties");
-    }
-  };
-
-  //? ===========> Fetch Students <=============
-
   const fetchStudents = async () => {
-    const response = await fetch("http://localhost:9090/student/with-choices");
-    const data = await response.json();
-    setStudents(
-      data.map((student) => ({
-        ...student,
-        MoyGeneral:
-          (student.moyS1 + student.moyS2 + student.moyS3 + student.moyS4) / 4,
-      }))
-    );
+    try {
+      const response = await axios.get("http://localhost:9090/student/Affected_spe");
+      setStudentsF(response.data.data);
+    } catch (err) {
+      console.error("Error fetching student data:", err);
+      setMessageType("Failed");
+      setMessage("Failed to fetch student data.");
+      setTimeout(() => setMessage(null), 5000);
+    }
   };
 
-  //? ===========> Add Choice <=============
+  const fetchSpecialities = async () => {
+    try {
+      const response = await axios.get("http://localhost:9090/speciality/specialities");
+      setSpecialities(response.data.data);
+    } catch (err) {
+      console.error("Error fetching specialities data:", err);
+      setMessageType("Failed");
+      setMessage("Failed to fetch specialities data.");
+      setTimeout(() => setMessage(null), 5000);
+    }
+  };
 
-  const addChoice = async () => {
-    if (!selectedStudent) {
-      setError(true);
-      setAlertMessage("No Selected Student!");
+  const handleRowClick = async (student) => {
+    await fetchSpecialities();
+    setCurrentStudent(student);
+    if (student.choice1 === "Nan") {
+      setShowAddForm(true);
+    } else {
+      setShowUpdateForm(true);
+    }
+  };
+
+  const handleCancelA = () => {
+    setShowAddForm(false);
+  };
+
+  const handleCancelU = () => {
+    setShowUpdateForm(false);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setChoices((prevChoices) => ({
+      ...prevChoices,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmitA = async () => {
+    if (Object.values(choices).some(choice => choice === null)) {
+      setMessage("Select all choices");
+      setMessageType("error");
+      setTimeout(() => setMessage(null), 5000);
       return;
     }
 
-    const updatedChoices = Object.entries(selectedChoices)
-      .filter(([order, name]) => name && !isNaN(parseInt(order, 10))) // Ensure both order and name are valid
-      .map(([order, name]) => ({
-        choiceOrder: parseInt(order, 10), // Convert order to integer
-        specialtyName: name, // Use `specialityName` to match backend DTO
-      }));
-
-    try {
-      // Prepare the payload
-      const payload = {
-        nbrStudent: selectedStudent.nbrStudent, // Send the student's ID
-        choices: updatedChoices, // Send the list of choices
-      };
-
-      console.log("payload :", payload);
-      // Make the POST request to the backend
-      const response = await fetch("http://localhost:9090/choices/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload), // Send the entire payload
-      });
-
-      if (response.ok) {
-        setSuccess(true);
-        setAlertMessage("Choices Successfully Assigned!");
-      } else {
-        setError(true);
-        const errorText = await response.text();
-        setAlertMessage(`Response Error: ${errorText}`);
+    const list = [];
+    list.push(choices.choice1);
+    list.push(choices.choice2);
+    list.push(choices.choice3);
+    list.push(choices.choice4);
+    const listChoices = [];
+    for (let i = 0 ; i<list.length ; i++){
+      const ch = {
+        "specialty" : list[i],
+        "orderChoice":i+1
       }
-    } catch (error) {
-      console.error("Error adding choices:", error);
-      setAlertMessage("Error adding choices!");
-      setError(true);
+      listChoices.push(ch)
     }
+
+    console.log(listChoices[0]);
+
+
+    axios
+        .post(`http://localhost:9090/choices/new_choice/${currentStudent.numStudent}`, listChoices)
+        .then(() => {
+            fetchStudents();
+             handleCancelA();
+        })
+        .catch((error) => {
+          console.error("Error updating choices:", error);
+          alert("An error occurred while updating the choices. Please try again.");
+        });
   };
 
-  //? ===========> Delete Choice <=============
-  const deleteChoices = async () => {
-    if (!selectedStudent) {
-      setError(true);
-      setAlertMessage("No Selected Student!");
-      return;
-    }
-    const userConfirmed = window.confirm(
-      `Are you sure you want to delete All Choices for the student: ${selectedStudent.fname} ${selectedStudent.lname} ?`
-    );
-
-    if (!userConfirmed) {
-      return; // Exit the function if the user cancels
-    }
-
-    try {
-      // Make the DELETE request
-      const response = await fetch(
-        `http://localhost:9090/choices/delete/${selectedStudent.nbrStudent}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (response.ok) {
-        setSuccess(true);
-        setAlertMessage("Choices Successfully Deleted!");
-      } else {
-        setError(true);
-        const errorText = await response.text();
-        setAlertMessage(`Response Error: ${errorText}`);
-      }
-    } catch (error) {
-      console.error("Error deleting choices:", error);
-      setError(true);
-      setAlertMessage("Error deleting choices!");
-    }
-  };
-
-  //? ===========> Update Choice <=============
-
-  const updateChoice = async () => {
-    if (!selectedStudent) {
-      setError(true);
-      setAlertMessage("No Selected Student!");
+  const handleSubmitU = async () => {
+    if (Object.values(choices).some(choice => choice === null)) {
+      setMessage("Select all choices");
+      setMessageType("error");
+      setTimeout(() => setMessage(null), 5000);
       return;
     }
 
-    // Validate that no duplicate specialty names are selected
-    const choiceNames = Object.values(selectedChoices).filter((name) => name);
-    const hasDuplicates = new Set(choiceNames).size !== choiceNames.length;
-
-    if (hasDuplicates) {
-      setError(true);
-      setAlertMessage("Duplicate specialty choices are not allowed!");
-      return;
+    const list = [];
+    list.push(choices.choice1);
+    list.push(choices.choice2);
+    list.push(choices.choice3);
+    list.push(choices.choice4);
+    const listChoices = [];
+    for (let i = 0 ; i<list.length ; i++){
+      const ch = {
+        "specialty" : list[i],
+        "orderChoice":i+1
+      }
+      listChoices.push(ch)
     }
 
-    // Map selected choices to match the backend's expected structure
-    const updatedChoices = Object.entries(selectedChoices)
-      .filter(([order, name]) => name && !isNaN(parseInt(order, 10))) // Ensure valid input
-      .map(([order, name]) => ({
-        choiceOrder: parseInt(order, 10),
-        specialtyName: name, // Ensure spelling matches backend expectation
-      }));
+    console.log(listChoices[0]);
 
-    try {
-      console.log("Updating choices:", updatedChoices);
 
-      const response = await fetch(
-        `http://localhost:9090/choices/update/${selectedStudent.nbrStudent}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedChoices),
-        }
-      );
-
-      if (response.ok) {
-        setSuccess(true);
-        setAlertMessage("Choices successfully updated!");
-      } else {
-        setError(true);
-        const errorText = await response.text();
-        setAlertMessage(`Response Error: ${errorText}`);
-      }
-    } catch (error) {
-      console.error("Error updating choices:", error);
-      setAlertMessage("Error updating choices!");
-      setError(true);
-    }
-  };
-
-  //? ===========> Assign Choice <=============
-  const assignChoices = async () => {
-    try {
-      // Show confirmation dialog
-      const confirmed = window.confirm(
-        "Are you sure you want to assign choices? This action will modify specialty placements and cannot be easily undone."
-      );
-
-      if (!confirmed) {
-        return;
-      }
-
-      setError(false);
-      setSuccess(false);
-
-      const response = await fetch(
-        "http://localhost:9090/student/assign-choices",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Failed to assign choices");
-      }
-
-      const result = await response.text();
-
-      // Refresh the student data to show new assignments
-      await fetchStudents();
-
-      setSuccess(true);
-      setAlertMessage("Successfully assigned student choices!");
-    } catch (error) {
-      console.error("Error in assignChoices:", error);
-      setError(true);
-      setAlertMessage(error.message || "Failed to assign choices");
-    }
-  };
-  //? ===========> Handel Row Click <=============
-
-  const handleRowClick = (row) => {
-    console.log("the student clicked is :", row);
-
-    setSelectedStudent(row);
-
-    // Initialize the selectedChoices with the student's choices
-    const initialChoices = row.choices.reduce((acc, choice) => {
-      acc[choice.orderChoice] = choice.nameSpecialty;
-      return acc;
-    }, {});
-
-    setSelectedChoices(initialChoices); // Set the selected choices
+    axios
+        .put(`http://localhost:9090/choices/update_choice/${currentStudent.numStudent}`, listChoices)
+        .then(() => {
+            fetchStudents();
+            handleCancelU();
+        })
+        .catch((error) => {
+          console.error("Error updating choices:", error);
+          alert("An error occurred while updating the choices. Please try again.");
+        });
   };
 
   return (
-    <>
-      {/*? ===========>  Header Text <============= */}
-
-      <Typography
-        variant="h2"
-        gutterBottom
-        sx={{
-          mx: 9,
-          display: "flex",
-          fontSize: "2.5rem",
-          fontWeight: "800",
-          color: "#2c3e50",
-          padding: "20px 0",
-          borderBottom: "3px solid #ffa500",
-          marginBottom: "30px",
-          position: "relative",
-          "&::after": {
-            content: '""',
-            position: "absolute",
-            bottom: "-3px",
-            left: 0,
-            width: "60px",
-            height: "3px",
-          },
-          "&:hover": {
-            color: "#ffa500",
-            transition: "color 0.3s ease-in-out",
-          },
-        }}
-      >
-        Manage Choices
-      </Typography>
-      {/*? ===================================================>  Search Textfield <================================ */}
-
-      <Box sx={{ mx: 4, my: 2, display: "flex", alignItems: "center" }}>
-        <TextField
-          label="Search by ID, First Name, or Last Name"
-          variant="outlined"
-          fullWidth
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </Box>
-
-      {/*? ===================================================>  Data Grid  <================================ */}
-
-      <Box
-        sx={{
-          height: 300,
-          width: "100%",
-          "& .super-app-theme--header": {
-            backgroundColor: "#ffa500",
-            color: "#fff",
-            fontWeight: "bold",
-            fontSize: "16px",
-            "& .MuiDataGrid-columnSeparator": {
-              color: "#fff",
-            },
-            "& .MuiDataGrid-menuIcon": {
-              color: "#fff",
-            },
-            "& .MuiDataGrid-sortIcon": {
-              color: "#fff",
-            },
-          },
-        }}
-      >
-        <DataGrid
-          rows={processedStudents}
-          columns={columns}
-          getRowId={(row) => row.nbrStudent}
-          pageSize={4}
-          onRowClick={({ row }) => handleRowClick(row)}
-          sx={{
-            height: 300,
-            width: "100%",
-            mx: "auto",
-            border: "2px solid #ddd",
-            "& .MuiDataGrid-cell": {
-              borderBottom: "1px solid #f0f0f0",
-            },
-            "& .MuiDataGrid-row": {
+      <>
+        <Notification message={message} type={messageType} />
+        <Typography
+            variant="h2"
+            gutterBottom
+            sx={{
+              mx: 9,
+              display: "flex",
+              fontSize: "2.5rem",
+              fontWeight: "800",
+              color: "#2c3e50",
+              padding: "20px 0",
+              borderBottom: "3px solid #0851ec",
+              marginBottom: "30px",
+              position: "relative",
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                bottom: "-3px",
+                left: 0,
+                width: "60px",
+                height: "3px",
+              },
               "&:hover": {
-                backgroundColor: "#fff8e1",
-                cursor: "pointer",
+                color: "#0851ec",
+                transition: "color 0.3s ease-in-out",
               },
-              "&.Mui-selected": {
-                backgroundColor: "#fff3e0",
-                "&:hover": {
-                  backgroundColor: "#ffe0b2",
-                },
-              },
-            },
-            "& .MuiDataGrid-columnSeparator": {
-              display: "none",
-            },
-          }}
-        />
-      </Box>
-
-      {/*? ===================================================> Form   <================================ */}
-
-      <Container
-        component="form"
-        sx={{
-          display: "flex",
-          width: "100%",
-          mt: 6,
-          alignItems: "center",
-          flexDirection: "column",
-          gap: 1, // Add spacing between items
-          padding: 1, // Optional padding
-          border: "1px solid lightgray",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            mx: 2,
-            my: 1,
-            gap: 4,
-            alignContent: "center",
-            justifyContent: "space-around",
-            flexDirection: "row",
-            width: "100%",
-          }}
+            }}
         >
-          {/*? ============> Selecte Choice    <================================ */}
+          Manage Choice
+        </Typography>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+          <tr>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>numStudent</th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>First Name</th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Last Name</th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Average</th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>choice 1</th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>choice 2</th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>choice 3</th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>choice 4</th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Result</th>
+          </tr>
+          </thead>
+          <tbody>
+          {studentsF.map((student) => (
+              <tr
+                  key={student.numStudent}
+                  style={{ backgroundColor: "#f3f3f3", border: "1px solid #ddd" }}
+                  onClick={() => handleRowClick(student)}
+              >
+                <td style={{ padding: "8px" }}>{student.numStudent}</td>
+                <td style={{ padding: "8px" }}>{student.firstName}</td>
+                <td style={{ padding: "8px" }}>{student.lastName}</td>
+                <td style={{ padding: "8px" }}>{student.average}</td>
+                <td style={{ padding: "8px" }}>{student.choice1}</td>
+                <td style={{ padding: "8px" }}>{student.choice2}</td>
+                <td style={{ padding: "8px" }}>{student.choice3}</td>
+                <td style={{ padding: "8px" }}>{student.choice4}</td>
+                <td style={{ padding: "8px" }}>{student.assignedSpeciality}</td>
+              </tr>
+          ))}
+          </tbody>
+        </table>
+        {showAddForm && (
+            <div
+                style={{
+                  position: "fixed",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  backgroundColor: "white",
+                  padding: "20px",
+                  boxShadow: "0 0 10px rgba(0, 0, 0, 0.25)",
+                  zIndex: 1000,
+                  width: "400px",
+                }}
+            >
+              <Notification message={message} type={messageType} />
+              <h1>Add new choices</h1>
+              <form>
+                <Dropdown name="choice1" value={choices.choice1} options={specialities} onChange={handleChange} />
+                <Dropdown name="choice2" value={choices.choice2} options={specialities} onChange={handleChange} />
+                <Dropdown name="choice3" value={choices.choice3} options={specialities} onChange={handleChange} />
+                <Dropdown name="choice4" value={choices.choice4} options={specialities} onChange={handleChange} />
+                <div style={{ display: "flex", justifyContent: "space-between", gap: "10px" }}>
+                  <button
+                      type="button"
+                      onClick={handleCancelA}
+                      style={{
+                        backgroundColor: "#f44336", // Red for Cancel
+                        color: "white",
+                        padding: "10px",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        flex: 1, // Adjusts button size equally
+                      }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                      type="submit"
+                      onClick={handleSubmitA}
+                      style={{
+                        backgroundColor: "#0851ec", // Blue for Confirm
+                        color: "white",
+                        padding: "10px",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        flex: 1, // Adjusts button size equally
+                      }}
+                  >
+                    Confirm
+                  </button>
+                </div>
+              </form>
+            </div>
+        )}
 
-          {[1, 2, 3, 4].map((order) => {
-            // Check if there is a selected student
-            const selectedSpecialtyName = selectedChoices[order] || null;
-            const inputLabel = selectedSpecialtyName
-              ? `${order}: ${selectedSpecialtyName}` // If a choice is selected, show the name
-              : `Choice ${order}`; // If no student or choice selected, show default
+        {showUpdateForm && (
+            <div
+                style={{
+                  position: "fixed",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  backgroundColor: "white",
+                  padding: "20px",
+                  boxShadow: "0 0 10px rgba(0, 0, 0, 0.25)",
+                  zIndex: 1000,
+                  width: "400px",
+                }}
+            >
+              <Notification message={message} type={messageType} />
+              <h1>Update new choices</h1>
+              <form>
+                <Dropdown name="choice1" value={choices.choice1} options={specialities} onChange={handleChange} />
+                <Dropdown name="choice2" value={choices.choice2} options={specialities} onChange={handleChange} />
+                <Dropdown name="choice3" value={choices.choice3} options={specialities} onChange={handleChange} />
+                <Dropdown name="choice4" value={choices.choice4} options={specialities} onChange={handleChange} />
+                <div style={{ display: "flex", justifyContent: "space-between", gap: "10px" }}>
+                  <button
+                      type="button"
+                      onClick={handleCancelU}
+                      style={{
+                        backgroundColor: "#f44336", // Red for Cancel
+                        color: "white",
+                        padding: "10px",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        flex: 1, // Adjusts button size equally
+                      }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                      type="submit"
+                      onClick={handleSubmitU}
+                      style={{
+                        backgroundColor: "#0851ec", // Blue for Confirm
+                        color: "white",
+                        padding: "10px",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        flex: 1, // Adjusts button size equally
+                      }}
+                  >
+                    Confirm
+                  </button>
+                </div>
+              </form>
+            </div>
+        )}
 
-            return (
-              <FormControl key={order}>
-                {/* Dynamically set the label to show the current selection or the default text */}
-                <InputLabel id={`choice-${order}-label`}>
-                  {inputLabel}
-                </InputLabel>
-
-                <Select
-                  key={order}
-                  labelId={`choice-${order}-label`}
-                  id={`choice-${order}`}
-                  value={selectedChoices[order] || ""}
-                  onChange={(e) => handleChoiceChange(order, e.target.value)}
-                  sx={{ width: "160px" }}
-                >
-                  {specialties.map((specialty) => (
-                    <MenuItem
-                      key={specialty.nbrSpecialty}
-                      value={specialty.name}
-                    >
-                      {specialty.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            );
-          })}
-        </Box>
-
-        {/*? ============>  Management Buttons    <================================ */}
-
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-around",
-            width: "100%",
-          }}
-        >
-          <Button
-            sx={{ display: "block", ml: 1 }}
-            variant="contained"
-            color="success"
-            onClick={addChoice}
-            size="large"
-          >
-            Add
-          </Button>
-          <Button
-            sx={{ display: "block", ml: 1 }}
-            variant="contained"
-            color="primary"
-            onClick={updateChoice}
-            size="large"
-          >
-            Update
-          </Button>
-          <Button
-            sx={{ display: "block", ml: 1 }}
-            size="large"
-            variant="contained"
-            color="error"
-            onClick={deleteChoices}
-          >
-            Delete
-          </Button>
-          <Button
-            sx={{ display: "block", ml: 1 }}
-            size="large"
-            variant="contained"
-            color="secondary"
-            onClick={assignChoices}
-          >
-            Assign
-          </Button>
-        </Box>
-      </Container>
-
-      {/*? ==================================================>  Error Management     <================================ */}
-
-      <Snackbar
-        open={error}
-        autoHideDuration={3000}
-        onClose={() => setError(false)}
-      >
-        <Alert severity="error" onClose={() => setError(false)}>
-          There was an error!
-        </Alert>
-      </Snackbar>
-      <Snackbar
-        open={success}
-        autoHideDuration={3000}
-        onClose={() => setSuccess(false)}
-      >
-        <Alert severity="success" onClose={() => setSuccess(false)}>
-          Action successful!
-        </Alert>
-      </Snackbar>
-      <Snackbar
-        open={error}
-        autoHideDuration={3000}
-        onClose={() => setError(false)}
-      >
-        <Alert severity="error" onClose={() => setError(false)}>
-          {alertMessage}
-        </Alert>
-      </Snackbar>
-    </>
-  ); //
+      </>
+  );
 }
+
+
+
+// {showUpdateForm && (
+//     <div
+//         style={{
+//           position: "fixed",
+//           top: "50%",
+//           left: "50%",
+//           transform: "translate(-50%, -50%)",
+//           backgroundColor: "white",
+//           padding: "20px",
+//           boxShadow: "0 0 10px rgba(0, 0, 0, 0.25)",
+//           zIndex: 1000,
+//           width: "400px",
+//         }}
+//     >
+//       <h1>Update choices</h1>
+//       <form>
+//         <div style={{marginBottom: "10px"}}>
+//           <label htmlFor="choice1" style={{display: "block", marginBottom: "5px"}}>Choice 1:</label>
+//           <select
+//               id="choice1"
+//               name="choice1"
+//               value={choices.choice1}
+//               onChange={handleChange}
+//               style={{
+//                 width: "100%",
+//                 padding: "8px",
+//                 borderRadius: "4px",
+//                 border: "1px solid #ccc",
+//               }}
+//           >
+//             <option value={currentStudent.choice1}>{currentStudent.choice1}</option>
+//             {
+//               specialities.map((spe, index) => (
+//                   <option value={spe}>{spe.name}</option>
+//               ))
+//             }
+//           </select>
+//         </div>
+//
+//         <div style={{marginBottom: "10px"}}>
+//           <label htmlFor="choice2" style={{display: "block", marginBottom: "5px"}}>Choice 2:</label>
+//           <select
+//               id="choice2"
+//               name="choice2"
+//               value={choices.choice2}
+//               onChange={handleChange}
+//               style={{
+//                 width: "100%",
+//                 padding: "8px",
+//                 borderRadius: "4px",
+//                 border: "1px solid #ccc",
+//               }}
+//           >
+//             <option value={currentStudent.choice2}>{currentStudent.choice2}</option>
+//             {
+//               specialities.map((spe, index) => (
+//                   <option value={spe}>{spe.name}</option>
+//               ))
+//             }
+//           </select>
+//         </div>
+//
+//         <div style={{marginBottom: "10px"}}>
+//           <label htmlFor="choice3" style={{display: "block", marginBottom: "5px"}}>Choice 3:</label>
+//           <select
+//               id="choice3"
+//               name="choice3"
+//               value={choices.choice3}
+//               onChange={handleChange}
+//               style={{
+//                 width: "100%",
+//                 padding: "8px",
+//                 borderRadius: "4px",
+//                 border: "1px solid #ccc",
+//               }}
+//           >
+//             <option value={currentStudent.choice3}>{currentStudent.choice3}</option>
+//             {
+//               specialities.map((spe, index) => (
+//                   <option value={spe}>{spe.name}</option>
+//               ))
+//             }
+//           </select>
+//         </div>
+//
+//         <div style={{marginBottom: "10px"}}>
+//           <label htmlFor="choice4" style={{display: "block", marginBottom: "5px"}}>Choice 4:</label>
+//           <select
+//               id="choice4"
+//               name="choice4"
+//               value={choices.choice4}
+//               onChange={handleChange}
+//               style={{
+//                 width: "100%",
+//                 padding: "8px",
+//                 borderRadius: "4px",
+//                 border: "1px solid #ccc",
+//               }}
+//           >
+//             <option value={currentStudent.choice4}>{currentStudent.choice4}</option>
+//             {
+//               specialities.map((spe, index) => (
+//                   <option value={spe}>{spe.name}</option>
+//               ))
+//             }
+//           </select>
+//         </div>
+//
+//         <div style={{display: "flex", justifyContent: "space-between", gap: "10px"}}>
+//           <button
+//               type="button"
+//               onClick={() => handleCancelU()}
+//               style={{
+//                 backgroundColor: "#f44336", // Red for Cancel
+//                 color: "white",
+//                 padding: "10px",
+//                 border: "none",
+//                 borderRadius: "4px",
+//                 cursor: "pointer",
+//                 flex: 1, // Adjusts button size equally
+//               }}
+//           >
+//             Cancel
+//           </button>
+//
+//           <button
+//               type="submit"
+//               onClick={() => handleSubmitU() }
+//               style={{
+//                 backgroundColor: "#0851ec", // Blue for Confirm
+//                 color: "white",
+//                 padding: "10px",
+//                 border: "none",
+//                 borderRadius: "4px",
+//                 cursor: "pointer",
+//                 flex: 1, // Adjusts button size equally
+//               }}
+//           >
+//             Confirm
+//           </button>
+//         </div>
+//
+//       </form>
+//     </div>
+// )}
